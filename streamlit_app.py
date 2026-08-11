@@ -43,6 +43,7 @@ magic_resistance = st.number_input(
 
 is_sub = st.checkbox("부캐")
 is_newbie = st.checkbox("뉴비")
+is_mobile = st.checkbox("모바일 플레이")
 
 if st.button("참가자 추가"):
 
@@ -64,7 +65,8 @@ if st.button("참가자 추가"):
             "job": job,
             "magic_resistance": magic_resistance,
             "is_sub": is_sub,
-            "is_newbie": is_newbie
+            "is_newbie": is_newbie,
+            "is_mobile": is_mobile
         }
 
         st.session_state.players.append(player)

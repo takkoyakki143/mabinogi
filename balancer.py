@@ -17,7 +17,8 @@ TEAM_JOB_BONUS = {
 
 SPECIAL_PLAYER_BONUS = {
     "아키이즈": 0.7,
-    "레키나": 0.15
+    "레키나": 0.15,
+    "리지": -0.7
 }
 
 HEALER_JOBS = [
@@ -149,6 +150,9 @@ def get_team_player_penalty(team):
 
         if player["is_newbie"]:
             total_penalty -= 0.7
+
+        if player["is_mobile"]:
+            total_penalty -= 0.1
 
     return round_2(total_penalty)
 
