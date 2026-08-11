@@ -1,5 +1,12 @@
 import streamlit as st
-from balancer import make_team_recommendations
+
+from balancer import (
+    make_team_recommendations,
+    get_team_average,
+    get_team_job_bonus,
+    get_team_special_bonus,
+    get_team_player_penalty,
+)
 
 st.title("장난감 길드")
 # 참가자 목록이 아직 없으면 빈 리스트 만들기
@@ -38,16 +45,31 @@ is_sub = st.checkbox("부캐")
 is_newbie = st.checkbox("뉴비")
 
 if st.button("참가자 추가"):
-    player = {
-        "name": name,
-        "combat_power": combat_power,
-        "job": job,
-        "magic_resistance": magic_resistance,
-        "is_sub": is_sub,
-        "is_newbie": is_newbie
-    }
 
-    st.session_state.players.append(player)
+    # 닉네임을 입력하지 않은 경우
+    if name.strip() == "":
+        st.warning("닉네임을 입력해주세요.")
+
+    # 이미 같은 닉네임이 등록되어 있는 경우
+    elif any(
+        player["name"] == name.strip()
+        for player in st.session_state.players
+    ):
+        st.warning("이미 등록된 참가자입니다.")
+
+    else:
+        player = {
+            "name": name.strip(),
+            "combat_power": combat_power,
+            "job": job,
+            "magic_resistance": magic_resistance,
+            "is_sub": is_sub,
+            "is_newbie": is_newbie
+        }
+
+        st.session_state.players.append(player)
+
+        st.success(f"{name.strip()} 참가자가 추가되었습니다.")
 
 st.subheader("참가자 목록")
 
@@ -78,4 +100,85 @@ if st.button("팀 추천하기"):
             st.session_state.players
         )
 
-        st.write(recommendations)
+        if len(recommendations) == 0:
+            st.warning("추천 가능한 팀 조합을 찾지 못했습니다.")
+
+        else:
+            for index, result in enumerate(recommendations, start=1):
+                st.subheader(f"추천안 {index}")
+
+                col_a, col_b = st.columns(2)
+
+                with col_a:
+                    st.markdown("### A팀")
+
+                    for player in result["team_a"]:
+                        st.write(
+                            f'{player["name"]} | {player["job"]}'
+                        )
+
+                    st.write(
+                        f'마도저항 반영 평균 전투력: '
+                        f'{get_team_average(result["team_a"]):.2f}'
+                    )
+
+                    st.write(
+                        f'직업 보너스: '
+                        f'{get_team_job_bonus(result["team_a"]):+.2f}'
+                    )
+
+                    st.write(
+                        f'특수 캐릭터 보너스: '
+                        f'{get_team_special_bonus(result["team_a"]):+.2f}'
+                    )
+
+                    st.write(
+                        f'부캐/뉴비 보정: '
+                        f'{get_team_player_penalty(result["team_a"]):+.2f}'
+                    )
+
+                    st.write(
+                        f'**팀 평균 전투력: '
+                        f'{result["team_a_score"]:.2f}**'
+                    )
+
+                with col_b:
+                    st.markdown("### B팀")
+
+                    for player in result["team_b"]:
+                        st.write(
+                            f'{player["name"]} | {player["job"]}'
+                        )
+
+                    st.write(
+                        f'마도저항 반영 평균 전투력: '
+                        f'{get_team_average(result["team_b"]):.2f}'
+                    )
+
+                    st.write(
+                        f'직업 보너스: '
+                        f'{get_team_job_bonus(result["team_b"]):+.2f}'
+                    )
+
+                    st.write(
+                        f'특수 캐릭터 보너스: '
+                        f'{get_team_special_bonus(result["team_b"]):+.2f}'
+                    )
+
+                    st.write(
+                        f'부캐/뉴비 보정: '
+                        f'{get_team_player_penalty(result["team_b"]):+.2f}'
+                    )
+
+                    st.write(
+                        f'**팀 평균 전투력: '
+                        f'{result["team_b_score"]:.2f}**'
+                    )
+    
+
+                st.info(
+                    f'두 팀 평균 전투력 차이: '
+                    f'{result["score_difference"]:.2f}'
+                )
+
+                st.divider()
