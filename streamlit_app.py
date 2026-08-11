@@ -1,4 +1,9 @@
 import streamlit as st
+from supabase import create_client
+supabase = create_client(
+    st.secrets["SUPABASE_URL"],
+    st.secrets["SUPABASE_KEY"]
+)
 
 from balancer import (
     make_team_recommendations,
@@ -303,10 +308,24 @@ st.markdown(
 if "players" not in st.session_state:
     st.session_state.players = []
 
+# 현재 수정 중인 참가자 기억하기
+if "editing_index" not in st.session_state:
+    st.session_state.editing_index = None
+
 with st.container(border=True):
     st.subheader("참가자 등록")
 
-    name = st.text_input("닉네임")
+    if st.session_state.editing_index is not None:
+        editing_player = st.session_state.players[
+            st.session_state.editing_index
+        ]
+    else:
+        editing_player = None
+
+    name = st.text_input(
+        "닉네임",
+        value=editing_player["name"] if editing_player else ""
+    )
 
     st.caption("※ 아키/레키님은 본캐로 참가하는 경우 아키이즈/레키나로 기입해주세요.")
     st.caption("※ 리지님은 본캐/부캐 상관없이 꼭 '리지'로 기입해주세요.")
@@ -315,46 +334,76 @@ with st.container(border=True):
         "전투력",
         min_value=0.0,
         step=0.01,
-        format="%.2f"
+        format="%.2f",
+        value=editing_player["combat_power"] if editing_player else 0.0
     )
+
+    job_list = [
+        "사제", "전사", "마법사", "수도사",
+        "장궁병", "듀얼블레이드", "대검전사", "검술사",
+        "기사", "궁수", "석궁사수", "빙결술사",
+        "화염술사", "전격술사", "힐러", "암흑술사",
+        "도적", "격투가", "음유시인", "악사", "댄서"
+    ]
+
+    job_index = 0
+
+    if editing_player:
+        job_index = job_list.index(editing_player["job"])
 
     job = st.selectbox(
         "직업",
-        [
-            "사제", "전사", "마법사", "수도사",
-            "장궁병", "듀얼블레이드", "대검전사", "검술사",
-            "기사", "궁수", "석궁사수", "빙결술사",
-            "화염술사", "전격술사", "힐러", "암흑술사",
-            "도적", "격투가", "음유시인", "악사", "댄서"
-        ]
+        job_list,
+        index=job_index
     )
 
     magic_resistance = st.number_input(
         "마도저항",
         min_value=0,
-        step=1
+        step=1,
+        value=editing_player["magic_resistance"] if editing_player else 0
     )
 
-    is_sub = st.checkbox("부캐")
-    is_newbie = st.checkbox("뉴비")
-    is_mobile = st.checkbox("모바일 플레이")
+    is_sub = st.checkbox(
+        "부캐",
+        value=editing_player["is_sub"] if editing_player else False
+    )
 
-    if st.button("참가자 추가"):
+    is_newbie = st.checkbox(
+        "뉴비",
+        value=editing_player["is_newbie"] if editing_player else False
+    )
+
+    is_mobile = st.checkbox(
+        "모바일",
+        value=editing_player["is_mobile"] if editing_player else False
+    )
+
+    button_text = (
+        "수정 저장"
+        if st.session_state.editing_index is not None
+        else "참가자 추가"
+    )
+
+    if st.button(button_text):
+
+        cleaned_name = name.strip()
 
         # 닉네임을 입력하지 않은 경우
-        if name.strip() == "":
+        if cleaned_name == "":
             st.warning("닉네임을 입력해주세요.")
 
-        # 이미 같은 닉네임이 등록되어 있는 경우
+        # 다른 참가자와 닉네임이 중복되는 경우
         elif any(
-            player["name"] == name.strip()
-            for player in st.session_state.players
+            player["name"] == cleaned_name
+            and index != st.session_state.editing_index
+            for index, player in enumerate(st.session_state.players)
         ):
             st.warning("이미 등록된 참가자입니다.")
 
         else:
-            player = {
-                "name": name.strip(),
+            player_data = {
+                "name": cleaned_name,
                 "combat_power": combat_power,
                 "job": job,
                 "magic_resistance": magic_resistance,
@@ -363,11 +412,35 @@ with st.container(border=True):
                 "is_mobile": is_mobile
             }
 
-            st.session_state.players.append(player)
+            # 새 참가자 추가
+            if st.session_state.editing_index is None:
+                st.session_state.players.append(player_data)
+                st.success(f"{cleaned_name} 참가자가 추가되었습니다.")
 
-            st.success(f"{name.strip()} 참가자가 추가되었습니다.")
+            # 기존 참가자 수정
+            else:
+                st.session_state.players[
+                    st.session_state.editing_index
+                ] = player_data
+
+                st.session_state.editing_index = None
+
+                st.success(f"{cleaned_name} 참가자 정보가 수정되었습니다.")
+                st.rerun()
+
+    if st.session_state.editing_index is not None:
+        if st.button("수정 취소"):
+            st.session_state.editing_index = None
+            st.rerun()
 
 st.subheader("참가자 목록")
+
+if st.session_state.editing_index is not None:
+    editing_player = st.session_state.players[
+        st.session_state.editing_index
+    ]
+else:
+    editing_player = None
 
 for index, player in enumerate(st.session_state.players):
     col1, col2 = st.columns([5, 1])
@@ -407,11 +480,107 @@ for index, player in enumerate(st.session_state.players):
         st.markdown(player_card, unsafe_allow_html=True)
 
     with col2:
+        if st.button("수정", key=f"edit_{index}"):
+            st.session_state.editing_index = index
+            st.rerun()
+
         if st.button("삭제", key=f"delete_{index}"):
             st.session_state.players.pop(index)
-            st.rerun()    
+            st.rerun()   
 
 st.divider()
+
+st.subheader("명단 저장")
+
+st.info(
+    "💡 지난 참가자 명단을 불러온 뒤, 이번 주에 맞게 수정해서 사용할 수 있어요.\n\n"
+    "불참자는 삭제하고 전투력·마도저항은 '수정'으로 변경한 뒤, "
+    "새로운 명단 이름으로 저장해주세요."
+)
+
+list_name = st.text_input(
+    "명단 이름",
+    placeholder="예: 8월 2주차 레이드"
+)
+
+if st.button("현재 명단 저장"):
+    if list_name.strip() == "":
+        st.warning("명단 이름을 입력해주세요.")
+
+    elif len(st.session_state.players) == 0:
+        st.warning("저장할 참가자가 없습니다.")
+
+    else:
+        save_data = {
+            "list_name": list_name.strip(),
+            "players": st.session_state.players
+        }
+
+        supabase.table("raid_lists").insert(
+            save_data
+        ).execute()
+
+        st.success(
+            f"'{list_name.strip()}' 명단을 저장했습니다."
+        )
+
+saved_lists_response = (
+    supabase
+    .table("raid_lists")
+    .select("id, list_name, created_at")
+    .order("created_at", desc=True)
+    .execute()
+)
+
+saved_lists = saved_lists_response.data
+
+st.subheader("저장된 명단")
+
+st.caption(
+    "지난 명단을 선택해 불러오면 참가자 목록에 적용됩니다."
+)
+
+if len(saved_lists) == 0:
+    st.info("저장된 명단이 없습니다.")
+
+else:
+    saved_list_names = [
+        saved_list["list_name"]
+        for saved_list in saved_lists
+    ]
+
+    selected_list_name = st.selectbox(
+        "불러올 명단",
+        saved_list_names
+    )
+
+    if st.button("선택한 명단 불러오기"):
+        selected_list = next(
+            saved_list
+            for saved_list in saved_lists
+            if saved_list["list_name"] == selected_list_name
+        )
+
+        selected_id = selected_list["id"]
+
+        response = (
+            supabase
+            .table("raid_lists")
+            .select("players")
+            .eq("id", selected_id)
+            .single()
+            .execute()
+        )
+
+        st.session_state.players = response.data["players"]
+
+        st.session_state.editing_index = None
+
+        st.success(
+            f"'{selected_list_name}' 명단을 불러왔습니다."
+        )
+
+        st.rerun()
 
 if st.button("팀 추천하기"):
     if len(st.session_state.players) < 2:
@@ -544,3 +713,4 @@ if st.button("팀 추천하기"):
                 )
 
                 st.divider()
+
