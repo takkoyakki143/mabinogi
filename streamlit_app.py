@@ -8,73 +8,364 @@ from balancer import (
     get_team_player_penalty,
 )
 
-st.title("장난감 길드")
+# =========================
+# 사이트 디자인
+# =========================
+
+st.markdown(
+    """
+    <style>
+
+    /* 전체 배경 */
+    .stApp {
+        background:
+            radial-gradient(
+                circle at 15% 10%,
+                rgba(65, 115, 130, 0.45) 0%,
+                rgba(35, 67, 78, 0.30) 30%,
+                rgba(18, 31, 37, 0.15) 60%
+            ),
+            linear-gradient(
+                135deg,
+                #202b30 0%,
+                #172126 50%,
+                #121a1e 100%
+            );
+
+        color: #f7f8f8;
+    }
+
+    /* 화면 전체 폭 */
+    .block-container {
+        max-width: 1050px;
+        padding-top: 3rem;
+        padding-bottom: 4rem;
+    }
+
+    /* 기본 제목 색상 */
+    h1, h2, h3 {
+        color: #f4f7f7;
+    }
+
+    /* 작은 길드 이름 */
+    .guild-name {
+        color: #ff7355;
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    /* 메인 제목 */
+    .raid-title {
+        color: #fff8f3;
+        font-size: 2.8rem;
+        font-weight: 800;
+        line-height: 1.15;
+        margin-bottom: 0.6rem;
+    }
+
+    /* 제목 아래 설명 */
+    .raid-description {
+        color: #aeb8bb;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* 반투명 카드 */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background: rgba(23, 35, 41, 0.72);
+        border: 1px solid rgba(143, 186, 198, 0.18);
+        border-radius: 18px;
+        padding: 18px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    /* 참가자 카드 */
+    .player-card {
+        background: rgba(22, 34, 40, 0.72);
+        border: 1px solid rgba(145, 185, 195, 0.16);
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 10px;
+        backdrop-filter: blur(10px);
+    }
+
+    .player-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .player-name {
+        color: #ffffff;
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    .player-job {
+        color: #b7c4c8;
+        font-size: 0.9rem;
+    }
+
+    .player-stats {
+        display: flex;
+        gap: 40px;
+    }
+
+    .stat-label {
+        color: #98a9ae;
+        font-size: 0.8rem;
+        margin-right: 8px;
+    }
+
+    .combat-power {
+        color: #ff7355;
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    .magic-resistance {
+        color: #62d6f5;
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    /* 참가자 상태 태그 */
+    .player-tags {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+
+    .player-tag {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .sub-tag {
+        background: rgba(255, 183, 77, 0.16);
+        color: #ffb74d;
+        border: 1px solid rgba(255, 183, 77, 0.30);
+    }
+
+    .newbie-tag {
+        background: rgba(255, 107, 85, 0.16);
+        color: #ff7355;
+        border: 1px solid rgba(255, 107, 85, 0.30);
+    }
+
+    .mobile-tag {
+        background: rgba(98, 214, 245, 0.14);
+        color: #62d6f5;
+        border: 1px solid rgba(98, 214, 245, 0.28);
+    }
+
+    .team-card {
+        background: rgba(21, 33, 39, 0.78);
+        border: 1px solid rgba(150, 190, 200, 0.16);
+        border-radius: 18px;
+        padding: 18px 20px;
+        backdrop-filter: blur(10px);
+    }
+
+    .team-card-title {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 14px;
+    }
+
+    .team-member {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        color: #f5f7f7;
+    }
+
+    .team-job {
+        color: #9fb2b8;
+        font-size: 0.9rem;
+    }
+
+    .team-card-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        margin: 14px 0;
+    }
+
+    .team-stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        color: #b7c4c8;
+    }
+
+    .team-stat strong {
+        color: #ffffff;
+    }
+
+    .team-final {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+    }
+
+    .team-final span {
+        color: #cbd6d9;
+        font-weight: 700;
+    }
+
+    .team-final strong {
+        color: #ff7355;
+        font-size: 1.35rem;
+    }
+    
+    /* 추천안 제목 */
+    .recommendation-header {
+        margin-top: 26px;
+        margin-bottom: 18px;
+    }
+
+    .recommendation-number {
+        color: #ffffff;
+        font-size: 1.6rem;
+        font-weight: 800;
+    }
+
+    .recommendation-description {
+        color: #9fb2b8;
+        font-size: 0.9rem;
+        margin-top: 4px;
+    }
+
+
+    /* 두 팀 평균 전투력 차이 */
+    .difference-card {
+        margin-top: 18px;
+        margin-bottom: 16px;
+        padding: 16px 20px;
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(32, 57, 67, 0.82),
+                rgba(21, 38, 45, 0.82)
+            );
+
+        border: 1px solid rgba(98, 214, 245, 0.22);
+        border-radius: 16px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        backdrop-filter: blur(10px);
+    }
+
+    .difference-label {
+        color: #b9c9cd;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .difference-value {
+        color: #62d6f5;
+        font-size: 1.7rem;
+        font-weight: 900;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <div class="guild-header">
+        <div class="guild-name">장난감 길드</div>
+        <div class="raid-title">레이드 준비실</div>
+        <div class="raid-description">
+            이번 주 출정 인원을 등록하고 팀을 편성해보세요!
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 # 참가자 목록이 아직 없으면 빈 리스트 만들기
 if "players" not in st.session_state:
     st.session_state.players = []
 
-st.subheader("참가자 등록")
+with st.container(border=True):
+    st.subheader("참가자 등록")
 
-name = st.text_input("닉네임")
+    name = st.text_input("닉네임")
 
-st.caption("※ 아키/레키님은 본캐로 참가하는 경우 아키이즈/레키나로 기입해주세요.")
-st.caption("※ 리지님은 본캐/부캐 상관없이 꼭 '리지'로 기입해주세요.")
+    st.caption("※ 아키/레키님은 본캐로 참가하는 경우 아키이즈/레키나로 기입해주세요.")
+    st.caption("※ 리지님은 본캐/부캐 상관없이 꼭 '리지'로 기입해주세요.")
 
-combat_power = st.number_input(
-    "전투력",
-    min_value=0.0,
-    step=0.01,
-    format="%.2f"
-)
+    combat_power = st.number_input(
+        "전투력",
+        min_value=0.0,
+        step=0.01,
+        format="%.2f"
+    )
 
-job = st.selectbox(
-    "직업",
-    [
-        "사제", "전사", "마법사", "수도사",
-        "장궁병", "듀얼블레이드", "대검전사", "검술사",
-        "기사", "궁수", "석궁사수", "빙결술사",
-        "화염술사", "전격술사", "힐러", "암흑술사",
-        "도적", "격투가", "음유시인", "악사", "댄서"
-    ]
-)
+    job = st.selectbox(
+        "직업",
+        [
+            "사제", "전사", "마법사", "수도사",
+            "장궁병", "듀얼블레이드", "대검전사", "검술사",
+            "기사", "궁수", "석궁사수", "빙결술사",
+            "화염술사", "전격술사", "힐러", "암흑술사",
+            "도적", "격투가", "음유시인", "악사", "댄서"
+        ]
+    )
 
-magic_resistance = st.number_input(
-    "마도저항",
-    min_value=0,
-    step=1
-)
+    magic_resistance = st.number_input(
+        "마도저항",
+        min_value=0,
+        step=1
+    )
 
-is_sub = st.checkbox("부캐")
-is_newbie = st.checkbox("뉴비")
-is_mobile = st.checkbox("모바일 플레이")
+    is_sub = st.checkbox("부캐")
+    is_newbie = st.checkbox("뉴비")
+    is_mobile = st.checkbox("모바일 플레이")
 
-if st.button("참가자 추가"):
+    if st.button("참가자 추가"):
 
-    # 닉네임을 입력하지 않은 경우
-    if name.strip() == "":
-        st.warning("닉네임을 입력해주세요.")
+        # 닉네임을 입력하지 않은 경우
+        if name.strip() == "":
+            st.warning("닉네임을 입력해주세요.")
 
-    # 이미 같은 닉네임이 등록되어 있는 경우
-    elif any(
-        player["name"] == name.strip()
-        for player in st.session_state.players
-    ):
-        st.warning("이미 등록된 참가자입니다.")
+        # 이미 같은 닉네임이 등록되어 있는 경우
+        elif any(
+            player["name"] == name.strip()
+            for player in st.session_state.players
+        ):
+            st.warning("이미 등록된 참가자입니다.")
 
-    else:
-        player = {
-            "name": name.strip(),
-            "combat_power": combat_power,
-            "job": job,
-            "magic_resistance": magic_resistance,
-            "is_sub": is_sub,
-            "is_newbie": is_newbie,
-            "is_mobile": is_mobile
-        }
+        else:
+            player = {
+                "name": name.strip(),
+                "combat_power": combat_power,
+                "job": job,
+                "magic_resistance": magic_resistance,
+                "is_sub": is_sub,
+                "is_newbie": is_newbie,
+                "is_mobile": is_mobile
+            }
 
-        st.session_state.players.append(player)
+            st.session_state.players.append(player)
 
-        st.success(f"{name.strip()} 참가자가 추가되었습니다.")
+            st.success(f"{name.strip()} 참가자가 추가되었습니다.")
 
 st.subheader("참가자 목록")
 
@@ -82,12 +373,38 @@ for index, player in enumerate(st.session_state.players):
     col1, col2 = st.columns([5, 1])
 
     with col1:
-        st.write(
-            f'{player["name"]} | '
-            f'{player["job"]} | '
-            f'전투력 {player["combat_power"]:.2f} | '
-            f'마도저항 {player["magic_resistance"]}'
+        tags = ""
+
+        if player["is_sub"]:
+            tags += '<span class="player-tag sub-tag">부캐</span>'
+
+        if player["is_newbie"]:
+            tags += '<span class="player-tag newbie-tag">뉴비</span>'
+
+        if player["is_mobile"]:
+            tags += '<span class="player-tag mobile-tag">모바일</span>'
+
+        player_card = (
+            f'<div class="player-card">'
+            f'<div class="player-card-top">'
+            f'<span class="player-name">{player["name"]}</span>'
+            f'<span class="player-job">{player["job"]}</span>'
+            f'</div>'
+            f'<div class="player-stats">'
+            f'<div>'
+            f'<span class="stat-label">전투력</span>'
+            f'<span class="combat-power">{player["combat_power"]:.2f}</span>'
+            f'</div>'
+            f'<div>'
+            f'<span class="stat-label">마도저항</span>'
+            f'<span class="magic-resistance">{player["magic_resistance"]:,}</span>'
+            f'</div>'
+            f'</div>'
+            f'<div class="player-tags">{tags}</div>'
+            f'</div>'
         )
+
+        st.markdown(player_card, unsafe_allow_html=True)
 
     with col2:
         if st.button("삭제", key=f"delete_{index}"):
@@ -110,81 +427,98 @@ if st.button("팀 추천하기"):
 
         else:
             for index, result in enumerate(recommendations, start=1):
-                st.subheader(f"추천안 {index}")
+                st.markdown(
+                    f"""
+                    <div class="recommendation-header">
+                        <div class="recommendation-number">추천안 {index}</div>
+                        <div class="recommendation-description">
+                            균형 점수가 좋은 편성입니다.
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
                 col_a, col_b = st.columns(2)
 
                 with col_a:
-                    st.markdown("### A팀")
+                    team_a_names = ""
 
                     for player in result["team_a"]:
-                        st.write(
-                            f'{player["name"]} | {player["job"]}'
+                        team_a_names += (
+                            f'<div class="team-member">'
+                            f'<span>{player["name"]}</span>'
+                            f'<span class="team-job">{player["job"]}</span>'
+                            f'</div>'
                         )
 
-                    st.write(
-                        f'마도저항 반영 평균 전투력: '
-                        f'{get_team_average(result["team_a"]):.2f}'
+                    team_a_card = (
+                        f'<div class="team-card">'
+                        f'<div class="team-card-title">A팀</div>'
+                        f'{team_a_names}'
+                        f'<div class="team-card-divider"></div>'
+                        f'<div class="team-stat"><span>MR 반영 평균 전투력</span>'
+                        f'<strong>{get_team_average(result["team_a"]):.2f}</strong></div>'
+                        f'<div class="team-stat"><span>직업 보너스</span>'
+                        f'<strong>{get_team_job_bonus(result["team_a"]):+.2f}</strong></div>'
+                        f'<div class="team-stat"><span>특수 캐릭터 보너스</span>'
+                        f'<strong>{get_team_special_bonus(result["team_a"]):+.2f}</strong></div>'
+                        f'<div class="team-stat"><span>부캐/뉴비/모바일 보정</span>'
+                        f'<strong>{get_team_player_penalty(result["team_a"]):+.2f}</strong></div>'
+                        f'<div class="team-card-divider"></div>'
+                        f'<div class="team-final">'
+                        f'<span>팀 평균 전투력</span>'
+                        f'<strong>{result["team_a_score"]:.2f}</strong>'
+                        f'</div>'
+                        f'</div>'
                     )
 
-                    st.write(
-                        f'직업 보너스: '
-                        f'{get_team_job_bonus(result["team_a"]):+.2f}'
-                    )
-
-                    st.write(
-                        f'특수 캐릭터 보너스: '
-                        f'{get_team_special_bonus(result["team_a"]):+.2f}'
-                    )
-
-                    st.write(
-                        f'부캐/뉴비 보정: '
-                        f'{get_team_player_penalty(result["team_a"]):+.2f}'
-                    )
-
-                    st.write(
-                        f'**팀 평균 전투력: '
-                        f'{result["team_a_score"]:.2f}**'
-                    )
+                    st.markdown(team_a_card, unsafe_allow_html=True)
 
                 with col_b:
-                    st.markdown("### B팀")
+                    team_b_names = ""
 
                     for player in result["team_b"]:
-                        st.write(
-                            f'{player["name"]} | {player["job"]}'
+                        team_b_names += (
+                            f'<div class="team-member">'
+                            f'<span>{player["name"]}</span>'
+                            f'<span class="team-job">{player["job"]}</span>'
+                            f'</div>'
                         )
 
-                    st.write(
-                        f'마도저항 반영 평균 전투력: '
-                        f'{get_team_average(result["team_b"]):.2f}'
+                    team_b_card = (
+                        f'<div class="team-card">'
+                        f'<div class="team-card-title">B팀</div>'
+                        f'{team_b_names}'
+                        f'<div class="team-card-divider"></div>'
+                        f'<div class="team-stat"><span>MR 반영 평균 전투력</span>'
+                        f'<strong>{get_team_average(result["team_b"]):.2f}</strong></div>'
+                        f'<div class="team-stat"><span>직업 보너스</span>'
+                        f'<strong>{get_team_job_bonus(result["team_b"]):+.2f}</strong></div>'
+                        f'<div class="team-stat"><span>특수 캐릭터 보너스</span>'
+                        f'<strong>{get_team_special_bonus(result["team_b"]):+.2f}</strong></div>'
+                        f'<div class="team-stat"><span>부캐/뉴비/모바일 보정</span>'
+                        f'<strong>{get_team_player_penalty(result["team_b"]):+.2f}</strong></div>'
+                        f'<div class="team-card-divider"></div>'
+                        f'<div class="team-final">'
+                        f'<span>팀 평균 전투력</span>'
+                        f'<strong>{result["team_b_score"]:.2f}</strong>'
+                        f'</div>'
+                        f'</div>'
                     )
 
-                    st.write(
-                        f'직업 보너스: '
-                        f'{get_team_job_bonus(result["team_b"]):+.2f}'
-                    )
-
-                    st.write(
-                        f'특수 캐릭터 보너스: '
-                        f'{get_team_special_bonus(result["team_b"]):+.2f}'
-                    )
-
-                    st.write(
-                        f'부캐/뉴비 보정: '
-                        f'{get_team_player_penalty(result["team_b"]):+.2f}'
-                    )
-
-                    st.write(
-                        f'**팀 평균 전투력: '
-                        f'{result["team_b_score"]:.2f}**'
-                    )
+                    st.markdown(team_b_card, unsafe_allow_html=True)
     
 
-                st.info(
-                    f'두 팀 평균 전투력 차이: '
-                    f'{result["score_difference"]:.2f}'
+                difference_card = (
+                    f'<div class="difference-card">'
+                    f'<div class="difference-label">두 팀 평균 전투력 차이</div>'
+                    f'<div class="difference-value">{result["score_difference"]:.2f}</div>'
+                    f'</div>'
                 )
+
+                st.markdown(difference_card, unsafe_allow_html=True)
+
                 # =========================
                 # 채팅용 팀 구성
                 # =========================
