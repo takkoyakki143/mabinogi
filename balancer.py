@@ -7,12 +7,12 @@ from decimal import Decimal, ROUND_HALF_UP
 # =========================
 
 TEAM_JOB_BONUS = {
-    "사제": 0.2,
+    "사제": 0.3,
     "전사": 0.2,
     "수도사": 0.2,
     "기사": 0.2,
     "빙결술사": 0.2,
-    "힐러": 0.3
+    "힐러": 0.4
 }
 
 SPECIAL_PLAYER_BONUS = {

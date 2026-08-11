@@ -180,5 +180,28 @@ if st.button("팀 추천하기"):
                     f'두 팀 평균 전투력 차이: '
                     f'{result["score_difference"]:.2f}'
                 )
+                # =========================
+                # 채팅용 팀 구성
+                # =========================
+
+                team_a_names = " / ".join(
+                    player["name"] for player in result["team_a"]
+                )
+
+                team_b_names = " / ".join(
+                    player["name"] for player in result["team_b"]
+                )
+
+                copy_text = (
+                    f"A팀 - {team_a_names}\n"
+                    f"B팀 - {team_b_names}"
+                )
+
+                st.text_area(
+                    "채팅용 팀 구성",
+                    copy_text,
+                    height=80,
+                    key=f"chat_copy_{index}"
+                )
 
                 st.divider()
