@@ -17,6 +17,9 @@ st.subheader("참가자 등록")
 
 name = st.text_input("닉네임")
 
+st.caption("※ 아키/레키님은 본캐로 참가하는 경우 아키이즈/레키나로 기입해주세요.")
+st.caption("※ 리지님은 본캐/부캐 상관없이 꼭 '리지'로 기입해주세요.")
+
 combat_power = st.number_input(
     "전투력",
     min_value=0.0,
