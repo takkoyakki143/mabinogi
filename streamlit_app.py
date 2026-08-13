@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import date
 from supabase import create_client
 supabase = create_client(
     st.secrets["SUPABASE_URL"],
@@ -983,3 +984,92 @@ if st.session_state.current_step == 4:
                 b_team_names,
                 key="b_rank_3"
             )
+
+        can_save_result = True
+
+        a_ranks = [a_rank_1, a_rank_2, a_rank_3]
+        b_ranks = [b_rank_1, b_rank_2, b_rank_3]
+
+        a_has_duplicate = len(set(a_ranks)) < len(a_ranks)
+        b_has_duplicate = len(set(b_ranks)) < len(b_ranks)
+
+        if a_has_duplicate:
+            st.warning("A팀 1·2·3등에 같은 사람이 중복 선택되었습니다.")
+
+        if b_has_duplicate:
+            st.warning("B팀 1·2·3등에 같은 사람이 중복 선택되었습니다.")
+
+
+        if a_clear_time <= 0 or b_clear_time <= 0:
+            st.warning("A팀과 B팀의 클리어 시간을 입력해주세요.")
+            can_save_result = False
+
+        if a_has_duplicate or b_has_duplicate:
+            can_save_result = False
+
+        if st.button(
+            "💾 레이드 결과 저장",
+            type="primary",
+            disabled=not can_save_result
+        ):
+            raid_data = {
+            "raid_date": str(date.today()),
+            "a_clear_time": int(a_clear_time),
+            "b_clear_time": int(b_clear_time),
+        }
+
+            response = (
+                supabase
+                .table("official_raid")
+                .insert(raid_data)
+                .execute()
+            )
+
+            raid_id = response.data[0]["id"]
+
+            player_records = []
+
+            for player in st.session_state.confirmed_team_a:
+                player_rank = None
+
+                if player["name"] == a_rank_1:
+                    player_rank = 1
+                elif player["name"] == a_rank_2:
+                    player_rank = 2
+                elif player["name"] == a_rank_3:
+                    player_rank = 3
+
+                player_records.append({
+                    "raid_id": raid_id,
+                    "team": "A",
+                    "player_name": player["name"],
+                    "rank": player_rank,
+                })
+
+            for player in st.session_state.confirmed_team_b:
+                player_rank = None
+
+                if player["name"] == b_rank_1:
+                    player_rank = 1
+                elif player["name"] == b_rank_2:
+                    player_rank = 2
+                elif player["name"] == b_rank_3:
+                    player_rank = 3
+
+                player_records.append({
+                    "raid_id": raid_id,
+                    "team": "B",
+                    "player_name": player["name"],
+                    "rank": player_rank,
+                })
+
+            players_response = (
+                supabase
+                .table("official_raid_players")
+                .insert(player_records)
+                .execute()
+            )
+
+            st.write(player_records)
+
+            st.write(response)
