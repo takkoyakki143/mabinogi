@@ -1159,5 +1159,211 @@ with tab_team:
                 st.success("결과 저장 완료! 🎉")
 
 with tab_stats:
+    from datetime import date
+    today = date.today()
+
     st.subheader("📊 레이드 통계")
-    st.info("통계 기능은 준비 중입니다.")
+    st.caption(f"{today.year}년 {today.month}월 공식 레이드 통계")
+    stats_response = (
+        supabase
+        .table("official_raid_players")
+        .select("*")
+        .execute()
+    )
+
+    raid_response = (
+        supabase
+        .table("official_raid")
+        .select("*")
+        .execute()
+    )
+
+    this_month_raids = []
+
+    for raid in raid_response.data:
+        raid_date = date.fromisoformat(raid["raid_date"])
+
+        if raid_date.year == today.year and raid_date.month == today.month:
+            this_month_raids.append(raid)
+
+    this_month_raid_ids = []
+
+    for raid in this_month_raids:
+        this_month_raid_ids.append(raid["id"])
+
+    player_stats = {}
+
+    for record in stats_response.data:
+
+        if record["raid_id"] not in this_month_raid_ids:
+            continue
+
+        player_name = record["player_name"]
+        rank = record["rank"]
+
+        if player_name not in player_stats:
+            player_stats[player_name] = {
+                "참가": 0,
+                "1등": 0,
+                "TOP3": 0
+            }
+
+        player_stats[player_name]["참가"] += 1
+
+        if rank == 1:
+            player_stats[player_name]["1등"] += 1
+
+        if rank is not None:
+            player_stats[player_name]["TOP3"] += 1
+
+    total_raids = len(this_month_raid_ids)
+
+    def get_top3_groups(score_items):
+        positive_items = [
+            (name, score)
+            for name, score in score_items
+            if score > 0
+        ]
+
+        unique_scores = sorted(
+            set(score for name, score in positive_items),
+            reverse=True
+        )[:3]
+
+        ranking_groups = []
+
+        for rank_number, score in enumerate(unique_scores, start=1):
+            names = [
+                name
+                for name, player_score in positive_items
+                if player_score == score
+            ]
+
+            ranking_groups.append({
+                "rank": rank_number,
+                "score": score,
+                "names": names,
+            })
+
+        return ranking_groups
+
+    participation_scores = []
+
+    for player_name, stats in player_stats.items():
+        participation_rate = (
+            stats["참가"] / total_raids * 100
+            if total_raids > 0
+            else 0
+        )
+
+        participation_scores.append(
+            (player_name, participation_rate)
+        )
+
+
+    top3_scores = [
+        (player_name, stats["TOP3"])
+        for player_name, stats in player_stats.items()
+    ]
+
+    first_place_scores = [
+        (player_name, stats["1등"])
+        for player_name, stats in player_stats.items()
+    ]
+
+
+    participation_rankings = get_top3_groups(participation_scores)
+    top3_rankings = get_top3_groups(top3_scores)
+    first_place_rankings = get_top3_groups(first_place_scores)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.subheader("🎯 참여율 TOP3")
+
+        for group in participation_rankings:
+            medal = {
+                1: "🥇",
+                2: "🥈",
+                3: "🥉"
+            }.get(group["rank"], "🏅")
+
+            st.markdown(
+                f"""
+                <div style="
+                    padding: 14px 16px;
+                    margin-bottom: 12px;
+                    border-radius: 14px;
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid rgba(150,190,200,0.14);
+                ">
+                    <div style="font-size: 1.1rem; font-weight: 800;">
+                        {medal} {group['rank']}위 · {group['score']:.0f}%
+                    </div>
+                    <div style="margin-top: 6px; opacity: 0.8;">
+                        {" / ".join(group["names"])}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    with col2:
+        st.subheader("🏅 순위권 TOP3")
+
+        for group in top3_rankings:
+            medal = {
+                1: "🥇",
+                2: "🥈",
+                3: "🥉"
+            }.get(group["rank"], "🏅")
+
+            st.markdown(
+                f"""
+                <div style="
+                    padding: 14px 16px;
+                    margin-bottom: 12px;
+                    border-radius: 14px;
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid rgba(150,190,200,0.14);
+                ">
+                    <div style="font-size: 1.1rem; font-weight: 800;">
+                        {medal} {group['rank']}위 · {group['score']}회
+                    </div>
+                    <div style="margin-top: 6px; opacity: 0.8;">
+                        {" / ".join(group["names"])}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    with col3:
+        st.subheader("👑 1위 횟수 TOP3")
+
+        for group in first_place_rankings:
+            medal = {
+                1: "🥇",
+                2: "🥈",
+                3: "🥉"
+            }.get(group["rank"], "🏅")
+
+            st.markdown(
+                f"""
+                <div style="
+                    padding: 14px 16px;
+                    margin-bottom: 12px;
+                    border-radius: 14px;
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid rgba(150,190,200,0.14);
+                ">
+                    <div style="font-size: 1.1rem; font-weight: 800;">
+                        {medal} {group['rank']}위 · {group['score']}회
+                    </div>
+                    <div style="margin-top: 6px; opacity: 0.8;">
+                        {" / ".join(group["names"])}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
