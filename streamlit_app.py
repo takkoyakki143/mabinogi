@@ -590,127 +590,284 @@ if st.button("팀 추천하기"):
         recommendations = make_team_recommendations(
             st.session_state.players
         )
+        st.session_state.recommendations = recommendations
 
-        if len(recommendations) == 0:
-            st.warning("추천 가능한 팀 조합을 찾지 못했습니다.")
+if "recommendations" in st.session_state:
+    recommendations = st.session_state.recommendations 
 
-        else:
-            for index, result in enumerate(recommendations, start=1):
-                st.markdown(
-                    f"""
-                    <div class="recommendation-header">
-                        <div class="recommendation-number">추천안 {index}</div>
-                        <div class="recommendation-description">
-                            균형 점수가 좋은 편성입니다.
-                        </div>
+    if len(recommendations) == 0:
+        st.warning("추천 가능한 팀 조합을 찾지 못했습니다.")
+
+    else:
+        for index, result in enumerate(recommendations, start=1):
+            st.markdown(
+                f"""
+                <div class="recommendation-header">
+                    <div class="recommendation-number">추천안 {index}</div>
+                    <div class="recommendation-description">
+                        균형 점수가 좋은 편성입니다.
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-                col_a, col_b = st.columns(2)
+            col_a, col_b = st.columns(2)
 
-                with col_a:
-                    team_a_names = ""
+            with col_a:
+                team_a_names = ""
 
-                    for player in result["team_a"]:
-                        team_a_names += (
-                            f'<div class="team-member">'
-                            f'<span>{player["name"]}</span>'
-                            f'<span class="team-job">{player["job"]}</span>'
-                            f'</div>'
-                        )
-
-                    team_a_card = (
-                        f'<div class="team-card">'
-                        f'<div class="team-card-title">A팀</div>'
-                        f'{team_a_names}'
-                        f'<div class="team-card-divider"></div>'
-                        f'<div class="team-stat"><span>MR 반영 평균 전투력</span>'
-                        f'<strong>{get_team_average(result["team_a"]):.2f}</strong></div>'
-                        f'<div class="team-stat"><span>직업 보너스</span>'
-                        f'<strong>{get_team_job_bonus(result["team_a"]):+.2f}</strong></div>'
-                        f'<div class="team-stat"><span>특수 캐릭터 보너스</span>'
-                        f'<strong>{get_team_special_bonus(result["team_a"]):+.2f}</strong></div>'
-                        f'<div class="team-stat"><span>부캐/뉴비/모바일 보정</span>'
-                        f'<strong>{get_team_player_penalty(result["team_a"]):+.2f}</strong></div>'
-                        f'<div class="team-card-divider"></div>'
-                        f'<div class="team-final">'
-                        f'<span>팀 평균 전투력</span>'
-                        f'<strong>{result["team_a_score"]:.2f}</strong>'
-                        f'</div>'
+                for player in result["team_a"]:
+                    team_a_names += (
+                        f'<div class="team-member">'
+                        f'<span>{player["name"]}</span>'
+                        f'<span class="team-job">{player["job"]}</span>'
                         f'</div>'
                     )
 
-                    st.markdown(team_a_card, unsafe_allow_html=True)
-
-                with col_b:
-                    team_b_names = ""
-
-                    for player in result["team_b"]:
-                        team_b_names += (
-                            f'<div class="team-member">'
-                            f'<span>{player["name"]}</span>'
-                            f'<span class="team-job">{player["job"]}</span>'
-                            f'</div>'
-                        )
-
-                    team_b_card = (
-                        f'<div class="team-card">'
-                        f'<div class="team-card-title">B팀</div>'
-                        f'{team_b_names}'
-                        f'<div class="team-card-divider"></div>'
-                        f'<div class="team-stat"><span>MR 반영 평균 전투력</span>'
-                        f'<strong>{get_team_average(result["team_b"]):.2f}</strong></div>'
-                        f'<div class="team-stat"><span>직업 보너스</span>'
-                        f'<strong>{get_team_job_bonus(result["team_b"]):+.2f}</strong></div>'
-                        f'<div class="team-stat"><span>특수 캐릭터 보너스</span>'
-                        f'<strong>{get_team_special_bonus(result["team_b"]):+.2f}</strong></div>'
-                        f'<div class="team-stat"><span>부캐/뉴비/모바일 보정</span>'
-                        f'<strong>{get_team_player_penalty(result["team_b"]):+.2f}</strong></div>'
-                        f'<div class="team-card-divider"></div>'
-                        f'<div class="team-final">'
-                        f'<span>팀 평균 전투력</span>'
-                        f'<strong>{result["team_b_score"]:.2f}</strong>'
-                        f'</div>'
-                        f'</div>'
-                    )
-
-                    st.markdown(team_b_card, unsafe_allow_html=True)
-    
-
-                difference_card = (
-                    f'<div class="difference-card">'
-                    f'<div class="difference-label">두 팀 평균 전투력 차이</div>'
-                    f'<div class="difference-value">{result["score_difference"]:.2f}</div>'
+                team_a_card = (
+                    f'<div class="team-card">'
+                    f'<div class="team-card-title">A팀</div>'
+                    f'{team_a_names}'
+                    f'<div class="team-card-divider"></div>'
+                    f'<div class="team-stat"><span>MR 반영 평균 전투력</span>'
+                    f'<strong>{get_team_average(result["team_a"]):.2f}</strong></div>'
+                    f'<div class="team-stat"><span>직업 보너스</span>'
+                    f'<strong>{get_team_job_bonus(result["team_a"]):+.2f}</strong></div>'
+                    f'<div class="team-stat"><span>특수 캐릭터 보너스</span>'
+                    f'<strong>{get_team_special_bonus(result["team_a"]):+.2f}</strong></div>'
+                    f'<div class="team-stat"><span>부캐/뉴비/모바일 보정</span>'
+                    f'<strong>{get_team_player_penalty(result["team_a"]):+.2f}</strong></div>'
+                    f'<div class="team-card-divider"></div>'
+                    f'<div class="team-final">'
+                    f'<span>팀 평균 전투력</span>'
+                    f'<strong>{result["team_a_score"]:.2f}</strong>'
+                    f'</div>'
                     f'</div>'
                 )
 
-                st.markdown(difference_card, unsafe_allow_html=True)
+                st.markdown(team_a_card, unsafe_allow_html=True)
 
-                # =========================
-                # 채팅용 팀 구성
-                # =========================
+            with col_b:
+                team_b_names = ""
 
-                team_a_names = " / ".join(
-                    player["name"] for player in result["team_a"]
+                for player in result["team_b"]:
+                    team_b_names += (
+                        f'<div class="team-member">'
+                        f'<span>{player["name"]}</span>'
+                        f'<span class="team-job">{player["job"]}</span>'
+                        f'</div>'
+                    )
+
+                team_b_card = (
+                    f'<div class="team-card">'
+                    f'<div class="team-card-title">B팀</div>'
+                    f'{team_b_names}'
+                    f'<div class="team-card-divider"></div>'
+                    f'<div class="team-stat"><span>MR 반영 평균 전투력</span>'
+                    f'<strong>{get_team_average(result["team_b"]):.2f}</strong></div>'
+                    f'<div class="team-stat"><span>직업 보너스</span>'
+                    f'<strong>{get_team_job_bonus(result["team_b"]):+.2f}</strong></div>'
+                    f'<div class="team-stat"><span>특수 캐릭터 보너스</span>'
+                    f'<strong>{get_team_special_bonus(result["team_b"]):+.2f}</strong></div>'
+                    f'<div class="team-stat"><span>부캐/뉴비/모바일 보정</span>'
+                    f'<strong>{get_team_player_penalty(result["team_b"]):+.2f}</strong></div>'
+                    f'<div class="team-card-divider"></div>'
+                    f'<div class="team-final">'
+                    f'<span>팀 평균 전투력</span>'
+                    f'<strong>{result["team_b_score"]:.2f}</strong>'
+                    f'</div>'
+                    f'</div>'
                 )
 
-                team_b_names = " / ".join(
-                    player["name"] for player in result["team_b"]
-                )
+                st.markdown(team_b_card, unsafe_allow_html=True)
 
-                copy_text = (
-                    f"A팀 - {team_a_names}\n"
-                    f"B팀 - {team_b_names}"
-                )
 
-                st.text_area(
-                    "채팅용 팀 구성",
-                    copy_text,
-                    height=80,
-                    key=f"chat_copy_{index}"
-                )
+            difference_card = (
+                f'<div class="difference-card">'
+                f'<div class="difference-label">두 팀 평균 전투력 차이</div>'
+                f'<div class="difference-value">{result["score_difference"]:.2f}</div>'
+                f'</div>'
+            )
 
-                st.divider()
+            st.markdown(difference_card, unsafe_allow_html=True)
 
+            if st.button(
+                f"추천안 {index}으로 편집하기",
+                key=f"select_recommendation_{index}"
+            ):
+                st.session_state.final_team_a = result["team_a"].copy()
+                st.session_state.final_team_b = result["team_b"].copy()
+                st.session_state.selected_recommendation = index
+
+
+            # =========================
+            # 채팅용 팀 구성
+            # =========================
+
+            team_a_names = " / ".join(
+                player["name"] for player in result["team_a"]
+            )
+
+            team_b_names = " / ".join(
+                player["name"] for player in result["team_b"]
+            )
+
+            copy_text = (
+                f"A팀 - {team_a_names}\n"
+                f"B팀 - {team_b_names}"
+            )
+
+            st.text_area(
+                "채팅용 팀 구성",
+                copy_text,
+                height=80,
+                key=f"chat_copy_{index}"
+            )
+
+            st.divider()
+
+if "final_team_a" in st.session_state and "final_team_b" in st.session_state:
+    st.subheader("⚔️ 최종 편성")
+
+    st.caption(
+        f"추천안 {st.session_state.selected_recommendation}을 기준으로 편집 중"
+    )
+
+    final_col_a, final_col_b = st.columns(2)
+
+    with final_col_a:
+        st.markdown("### A팀")
+
+        for player in st.session_state.final_team_a:
+            st.write(f'{player["name"]} / {player["job"]}')
+
+        selected_a = st.selectbox(
+            "A팀에서 이동할 사람",
+            [player["name"] for player in st.session_state.final_team_a],
+            key="move_from_a"
+        )
+
+        if st.button("A → B 이동"):
+            player_to_move = next(
+                player
+                for player in st.session_state.final_team_a
+                if player["name"] == selected_a
+            )
+
+            st.session_state.final_team_a.remove(player_to_move)
+            st.session_state.final_team_b.append(player_to_move)
+
+            st.rerun()
+
+    with final_col_b:
+        st.markdown("### B팀")
+
+        for player in st.session_state.final_team_b:
+            st.write(f'{player["name"]} / {player["job"]}')
+
+        selected_b = st.selectbox(
+            "B팀에서 이동할 사람",
+            [player["name"] for player in st.session_state.final_team_b],
+            key="move_from_b"
+        )
+
+        if st.button("B → A 이동"):
+            player_to_move = next(
+                player
+                for player in st.session_state.final_team_b
+                if player["name"] == selected_b
+            )
+
+            st.session_state.final_team_b.remove(player_to_move)
+            st.session_state.final_team_a.append(player_to_move)
+
+            st.rerun()
+
+    final_a_average = get_team_average(st.session_state.final_team_a)
+    final_b_average = get_team_average(st.session_state.final_team_b)
+
+    final_a_job_bonus = get_team_job_bonus(st.session_state.final_team_a)
+    final_b_job_bonus = get_team_job_bonus(st.session_state.final_team_b)
+
+    final_a_special_bonus = get_team_special_bonus(st.session_state.final_team_a)
+    final_b_special_bonus = get_team_special_bonus(st.session_state.final_team_b)
+
+    final_a_penalty = get_team_player_penalty(st.session_state.final_team_a)
+    final_b_penalty = get_team_player_penalty(st.session_state.final_team_b)
+
+    final_a_score = (
+        final_a_average
+        + final_a_job_bonus
+        + final_a_special_bonus
+        + final_a_penalty
+    )
+
+    final_b_score = (
+        final_b_average
+        + final_b_job_bonus
+        + final_b_special_bonus
+        + final_b_penalty
+    )
+
+    final_score_difference = abs(final_a_score - final_b_score)
+
+    selected_index = st.session_state.selected_recommendation - 1
+
+    original_recommendation = st.session_state.recommendations[selected_index]
+
+    original_score_difference = original_recommendation["score_difference"]
+
+    difference_change = original_score_difference - final_score_difference
+
+    st.markdown("### 📊 최종 편성 계산")
+
+    result_col_a, result_col_b = st.columns(2)
+
+    with result_col_a:
+        st.write(f"A팀 평균 전투력: {final_a_average:.2f}")
+        st.write(f"A팀 직업 보너스: {final_a_job_bonus:+.2f}")
+        st.write(f"A팀 특수 보너스: {final_a_special_bonus:+.2f}")
+        st.write(f"A팀 부캐/뉴비 보정: {final_a_penalty:+.2f}")
+        st.write(f"**A팀 최종 점수: {final_a_score:.2f}**")
+
+    with result_col_b:
+        st.write(f"B팀 평균 전투력: {final_b_average:.2f}")
+        st.write(f"B팀 직업 보너스: {final_b_job_bonus:+.2f}")
+        st.write(f"B팀 특수 보너스: {final_b_special_bonus:+.2f}")
+        st.write(f"B팀 부캐/뉴비 보정: {final_b_penalty:+.2f}")
+        st.write(f"**B팀 최종 점수: {final_b_score:.2f}**")
+
+    st.metric(
+        "두 팀 최종 점수 차이",
+        f"{final_score_difference:.2f}"
+    )
+
+    st.markdown("### 🔄 원래 추천안과 비교")
+
+    compare_col_1, compare_col_2 = st.columns(2)
+
+    with compare_col_1:
+        st.metric(
+            "원래 추천안 점수 차이",
+            f"{original_score_difference:.2f}"
+        )
+
+    with compare_col_2:
+        st.metric(
+            "현재 최종안 점수 차이",
+            f"{final_score_difference:.2f}"
+        )
+
+    if difference_change > 0:
+        st.success(
+            f"균형 차이가 {difference_change:.2f} 줄었습니다."
+        )
+
+    elif difference_change < 0:
+        st.warning(
+            f"균형 차이가 {abs(difference_change):.2f} 늘었습니다."
+        )
+
+    else:
+        st.info("원래 추천안과 현재 최종안의 균형 차이가 같습니다.")
