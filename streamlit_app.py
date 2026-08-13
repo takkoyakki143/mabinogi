@@ -18,28 +18,37 @@ from balancer import (
 # 사이트 디자인
 # =========================
 
-st.markdown(
-    """
-    <style>
+theme_type = st.context.theme["type"]
+
+if theme_type == "light":
+    app_bg_color = "#f3f6f7"
+    custom_title_color = "#1f2d33"
+    custom_text_color = "#34454d"
+    custom_muted_color = "#687980"
+    custom_card_bg = "rgba(255, 255, 255, 0.88)"
+    custom_card_border = "rgba(60, 90, 100, 0.13)"
+    difference_card_bg = "linear-gradient(135deg, rgba(235, 246, 249, 0.95), rgba(245, 249, 250, 0.95))"
+    difference_label_color = "#61757d"
+
+else:
+    app_bg_color = "#172126"
+    custom_title_color = "#f4f7f7"
+    custom_text_color = "#f5f7f7"
+    custom_muted_color = "#9fb2b8"
+    custom_card_bg = "rgba(21, 33, 39, 0.78)"
+    custom_card_border = "rgba(150, 190, 200, 0.16)"
+    difference_card_bg = "linear-gradient(135deg, rgba(32, 57, 67, 0.82), rgba(21, 38, 45, 0.82))"
+    difference_label_color = "#b9c9cd"
+
+
+custom_css = """
+<style>
 
     /* 전체 배경 */
     .stApp {
-        background:
-            radial-gradient(
-                circle at 15% 10%,
-                rgba(65, 115, 130, 0.45) 0%,
-                rgba(35, 67, 78, 0.30) 30%,
-                rgba(18, 31, 37, 0.15) 60%
-            ),
-            linear-gradient(
-                135deg,
-                #202b30 0%,
-                #172126 50%,
-                #121a1e 100%
-            );
-
-        color: #f7f8f8;
-    }
+        background: var(--st-background-color);
+        color: var(--st-text-color);
+    } 
 
     /* 화면 전체 폭 */
     .block-container {
@@ -48,10 +57,6 @@ st.markdown(
         padding-bottom: 4rem;
     }
 
-    /* 기본 제목 색상 */
-    h1, h2, h3 {
-        color: #f4f7f7;
-    }
 
     /* 작은 길드 이름 */
     .guild-name {
@@ -63,7 +68,6 @@ st.markdown(
 
     /* 메인 제목 */
     .raid-title {
-        color: #fff8f3;
         font-size: 2.8rem;
         font-weight: 800;
         line-height: 1.15;
@@ -258,12 +262,7 @@ st.markdown(
         margin-bottom: 16px;
         padding: 16px 20px;
 
-        background:
-            linear-gradient(
-                135deg,
-                rgba(32, 57, 67, 0.82),
-                rgba(21, 38, 45, 0.82)
-            );
+        background: __DIFFERENCE_CARD_BG__;
 
         border: 1px solid rgba(98, 214, 245, 0.22);
         border-radius: 16px;
@@ -276,7 +275,7 @@ st.markdown(
     }
 
     .difference-label {
-        color: #b9c9cd;
+        color: __DIFFERENCE_LABEL__;
         font-size: 0.95rem;
         font-weight: 600;
     }
@@ -286,9 +285,93 @@ st.markdown(
         font-size: 1.7rem;
         font-weight: 900;
     }
+    /* 현재 Streamlit 테마에 맞춘 최종 색상 덮어쓰기 */
 
-    </style>
-    """,
+    h1, h2, h3,
+    .raid-title,
+    .player-name,
+    .team-card-title,
+    .recommendation-number {
+        color: __CUSTOM_TITLE__;
+    }
+
+    .team-member,
+    .team-stat strong {
+        color: __CUSTOM_TEXT__;
+    }
+
+    .raid-description,
+    .player-job,
+    .stat-label,
+    .team-job,
+    .team-stat,
+    .recommendation-description,
+    .difference-label {
+        color: __CUSTOM_MUTED__;
+    }
+
+    .player-card,
+    .team-card {
+        background: __CUSTOM_CARD_BG__;
+        border-color: __CUSTOM_CARD_BORDER__;
+    }
+    
+    /* 라이트/다크 공통 커스텀 텍스트 보정 */
+
+    [data-testid="stVerticalBlockBorderWrapper"] label,
+    [data-testid="stCheckbox"] label,
+    [data-testid="stTextInput"] label,
+    [data-testid="stNumberInput"] label,
+    [data-testid="stSelectbox"] label {
+        color: __CUSTOM_TEXT__;
+    }
+
+    [data-testid="stVerticalBlockBorderWrapper"] h1,
+    [data-testid="stVerticalBlockBorderWrapper"] h2,
+    [data-testid="stVerticalBlockBorderWrapper"] h3 {
+        color: __CUSTOM_TITLE__;
+    }
+
+
+</style>
+"""
+custom_css = custom_css.replace(
+    "__CUSTOM_TITLE__",
+    custom_title_color
+)
+
+custom_css = custom_css.replace(
+    "__CUSTOM_TEXT__",
+    custom_text_color
+)
+
+custom_css = custom_css.replace(
+    "__CUSTOM_MUTED__",
+    custom_muted_color
+)
+
+custom_css = custom_css.replace(
+    "__CUSTOM_CARD_BG__",
+    custom_card_bg
+)
+
+custom_css = custom_css.replace(
+    "__CUSTOM_CARD_BORDER__",
+    custom_card_border
+)
+
+custom_css = custom_css.replace(
+    "__DIFFERENCE_CARD_BG__",
+    difference_card_bg
+)
+
+custom_css = custom_css.replace(
+    "__DIFFERENCE_LABEL__",
+    difference_label_color
+)
+
+st.markdown(
+    custom_css,
     unsafe_allow_html=True
 )
 
