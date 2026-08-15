@@ -1186,6 +1186,17 @@ with tab_stats:
         if raid_date.year == today.year and raid_date.month == today.month:
             this_month_raids.append(raid)
 
+    previous_raid = None
+
+    if raid_response.data:
+        sorted_raids = sorted(
+            raid_response.data,
+            key=lambda raid: raid["raid_date"],
+            reverse=True
+        )
+
+        previous_raid = sorted_raids[0]
+
     this_month_raid_ids = []
 
     for raid in this_month_raids:
@@ -1367,3 +1378,82 @@ with tab_stats:
                 """,
                 unsafe_allow_html=True
             )
+    st.divider()
+    st.subheader("📅 직전 공식 레이드 결과")
+
+    if previous_raid is None:
+        st.info("저장된 레이드 기록이 없습니다.")
+    else:
+        st.write(f"날짜: {previous_raid['raid_date']}")
+        st.write(f"A팀 클리어 시간: {previous_raid['a_clear_time']}초")
+        st.write(f"B팀 클리어 시간: {previous_raid['b_clear_time']}초")
+
+        previous_players = [
+            record
+            for record in stats_response.data
+            if record["raid_id"] == previous_raid["id"]
+        ]
+
+        a_team = [
+            record
+            for record in previous_players
+            if record["team"] == "A"
+        ]
+
+        b_team = [
+            record
+            for record in previous_players
+            if record["team"] == "B"
+        ]
+
+        a_team = sorted(
+            a_team,
+            key=lambda player: (
+                player["rank"] is None,
+                player["rank"] if player["rank"] is not None else 999
+            )
+        )
+
+        b_team = sorted(
+            b_team,
+            key=lambda player: (
+                player["rank"] is None,
+                player["rank"] if player["rank"] is not None else 999
+            )
+        )
+
+        col_a, col_b = st.columns(2)
+
+        with col_a:
+            st.markdown("### ⚔️ A팀")
+
+            for player in a_team:
+                rank = player["rank"]
+
+                if rank == 1:
+                    medal = "🥇"
+                elif rank == 2:
+                    medal = "🥈"
+                elif rank == 3:
+                    medal = "🥉"
+                else:
+                    medal = ""
+
+                st.write(f"{medal} {player['player_name']}")
+
+        with col_b:
+            st.markdown("### ⚔️ B팀")
+
+            for player in b_team:
+                rank = player["rank"]
+
+                if rank == 1:
+                    medal = "🥇"
+                elif rank == 2:
+                    medal = "🥈"
+                elif rank == 3:
+                    medal = "🥉"
+                else:
+                    medal = ""
+
+                st.write(f"{medal} {player['player_name']}")

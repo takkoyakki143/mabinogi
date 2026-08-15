@@ -18,7 +18,8 @@ TEAM_JOB_BONUS = {
 SPECIAL_PLAYER_BONUS = {
     "아키이즈": 0.7,
     "레키나": 0.15,
-    "리지": -0.7
+    "리지": -0.7,
+    "엘라웨스": 0.3,
 }
 
 HEALER_JOBS = [
@@ -49,32 +50,38 @@ def round_2(value):
 
 
 def get_mr_bonus(magic_resistance):
-    if magic_resistance >= 6200:
+    if magic_resistance >= 8200:
+        return 0.27
+    elif magic_resistance >= 7700:
+        return 0.25
+    elif magic_resistance >= 7200:
+        return 0.23
+    elif magic_resistance >= 6600:
+        return 0.20
+    elif magic_resistance >= 6300:
+        return 0.18
+    elif magic_resistance >= 5800:
         return 0.15
-    elif magic_resistance >= 5400:
+    elif magic_resistance >= 5500:
+        return 0.13
+    elif magic_resistance >= 5000:
         return 0.10
+    elif magic_resistance >= 4600:
+        return 0.07
     elif magic_resistance >= 4400:
         return 0.05
-    elif magic_resistance >= 2500:
+    elif magic_resistance >= 3700:
         return 0
-    elif magic_resistance >= 2400:
-        return -0.10
-    elif magic_resistance >= 2300:
-        return -0.15
-    elif magic_resistance >= 2200:
+    elif magic_resistance >= 3600:
+        return -0.07
+    elif magic_resistance >= 3500:
+        return -0.14
+    elif magic_resistance >= 3300:
+        return -0.25
+    elif magic_resistance >= 3200:
         return -0.30
-    elif magic_resistance >= 2100:
+    elif magic_resistance >= 3100:
         return -0.40
-    elif magic_resistance >= 2000:
-        return -0.45
-    elif magic_resistance >= 1900:
-        return -0.55
-    elif magic_resistance >= 1800:
-        return -0.60
-    elif magic_resistance >= 1700:
-        return -0.70
-    elif magic_resistance >= 1600:
-        return -0.80
     else:
         return -0.90
 
