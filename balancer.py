@@ -120,11 +120,16 @@ def get_team_job_bonus(team):
     total_bonus = 0
 
     for job in TEAM_JOB_BONUS:
-        if job == "빙결술사":
+        if job in ["빙결술사", "사제", "수도사", "힐러"]:
             continue
 
         if job in jobs:
             total_bonus += TEAM_JOB_BONUS[job]
+
+    support_jobs = ["사제", "수도사", "힐러"]
+
+    if any(job in jobs for job in support_jobs):
+        total_bonus += 0.2
 
     ice_count = jobs.count("빙결술사")
 
@@ -139,8 +144,24 @@ def get_team_job_bonus(team):
 def get_team_special_bonus(team):
     total_bonus = 0
 
+    names = [player["name"] for player in team]
+
+    # 아키/레키 보너스는 같은 팀일 경우 중복 적용하지 않음
+    if "아키이즈" in names:
+        total_bonus += SPECIAL_PLAYER_BONUS["아키이즈"]
+    elif "레키나" in names:
+        total_bonus += SPECIAL_PLAYER_BONUS["레키나"]
+
+    # 엘라웨스는 팀 구성과 관계없이 항상 적용
+    if "엘라웨스" in names:
+        total_bonus += SPECIAL_PLAYER_BONUS["엘라웨스"]
+
+    # 그 외 특수 캐릭터 보너스
     for player in team:
         name = player["name"]
+
+        if name in ["아키이즈", "레키나", "엘라웨스"]:
+            continue
 
         if name in SPECIAL_PLAYER_BONUS:
             total_bonus += SPECIAL_PLAYER_BONUS[name]
