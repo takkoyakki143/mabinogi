@@ -165,7 +165,7 @@ def get_team_special_bonus(team):
 
         if name in SPECIAL_PLAYER_BONUS:
             total_bonus += SPECIAL_PLAYER_BONUS[name]
-
+    
     return round_2(total_bonus)
 
 
