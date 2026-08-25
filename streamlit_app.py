@@ -405,179 +405,182 @@ with tab_team:
     if st.session_state.current_step == 1:
         with st.container(border=True):
             st.subheader("참가자 등록")
+            input_col, list_col = st.columns([1, 1])
 
-            if st.session_state.editing_index is not None:
-                editing_player = st.session_state.players[
-                    st.session_state.editing_index
-                ]
-            else:
-                editing_player = None
-
-            name = st.text_input(
-                "닉네임",
-                value=editing_player["name"] if editing_player else ""
-            )
-
-            st.caption("※ 정확한 통계를 위해 닉네임 변형 없이 그대로 기입해주세요. ( ~문어~ > 문어야끼 )")
-            st.caption("※ 리지님은 본캐/부캐 상관없이 꼭 '리지'로 기입해주세요.")
-
-            combat_power = st.number_input(
-                "전투력",
-                min_value=0.0,
-                step=0.01,
-                format="%.2f",
-                value=editing_player["combat_power"] if editing_player else 0.0
-            )
-
-            job_list = [
-                "사제", "전사", "마법사", "수도사",
-                "장궁병", "듀얼블레이드", "대검전사", "검술사",
-                "기사", "궁수", "석궁사수", "빙결술사",
-                "화염술사", "전격술사", "힐러", "암흑술사",
-                "도적", "격투가", "음유시인", "악사", "댄서"
-            ]
-
-            job_index = 0
-
-            if editing_player:
-                job_index = job_list.index(editing_player["job"])
-
-            job = st.selectbox(
-                "직업",
-                job_list,
-                index=job_index
-            )
-
-            magic_resistance = st.number_input(
-                "마도저항",
-                min_value=0,
-                step=1,
-                value=editing_player["magic_resistance"] if editing_player else 0
-            )
-
-            is_sub = st.checkbox(
-                "부캐",
-                value=editing_player["is_sub"] if editing_player else False
-            )
-
-            is_newbie = st.checkbox(
-                "뉴비",
-                value=editing_player["is_newbie"] if editing_player else False
-            )
-
-            is_mobile = st.checkbox(
-                "모바일",
-                value=editing_player["is_mobile"] if editing_player else False
-            )
-
-            button_text = (
-                "수정 저장"
-                if st.session_state.editing_index is not None
-                else "참가자 추가"
-            )
-
-            if st.button(button_text):
-
-                cleaned_name = name.strip()
-
-                # 닉네임을 입력하지 않은 경우
-                if cleaned_name == "":
-                    st.warning("닉네임을 입력해주세요.")
-
-                # 다른 참가자와 닉네임이 중복되는 경우
-                elif any(
-                    player["name"] == cleaned_name
-                    and index != st.session_state.editing_index
-                    for index, player in enumerate(st.session_state.players)
-                ):
-                    st.warning("이미 등록된 참가자입니다.")
-
+            with input_col:
+                if st.session_state.editing_index is not None:
+                    editing_player = st.session_state.players[
+                        st.session_state.editing_index
+                    ]
                 else:
-                    player_data = {
-                        "name": cleaned_name,
-                        "combat_power": combat_power,
-                        "job": job,
-                        "magic_resistance": magic_resistance,
-                        "is_sub": is_sub,
-                        "is_newbie": is_newbie,
-                        "is_mobile": is_mobile
-                    }
+                    editing_player = None
 
-                    # 새 참가자 추가
-                    if st.session_state.editing_index is None:
-                        st.session_state.players.append(player_data)
-                        st.success(f"{cleaned_name} 참가자가 추가되었습니다.")
-
-                    # 기존 참가자 수정
-                    else:
-                        st.session_state.players[
-                            st.session_state.editing_index
-                        ] = player_data
-
-                        st.session_state.editing_index = None
-
-                        st.success(f"{cleaned_name} 참가자 정보가 수정되었습니다.")
-                        st.rerun()
-
-            if st.session_state.editing_index is not None:
-                if st.button("수정 취소"):
-                    st.session_state.editing_index = None
-                    st.rerun()
-
-        st.subheader("참가자 목록")
-
-        if st.session_state.editing_index is not None:
-            editing_player = st.session_state.players[
-                st.session_state.editing_index
-            ]
-        else:
-            editing_player = None
-
-        for index, player in enumerate(st.session_state.players):
-            col1, col2 = st.columns([5, 1])
-
-            with col1:
-                tags = ""
-
-                if player["is_sub"]:
-                    tags += '<span class="player-tag sub-tag">부캐</span>'
-
-                if player["is_newbie"]:
-                    tags += '<span class="player-tag newbie-tag">뉴비</span>'
-
-                if player["is_mobile"]:
-                    tags += '<span class="player-tag mobile-tag">모바일</span>'
-
-                player_card = (
-                    f'<div class="player-card">'
-                    f'<div class="player-card-top">'
-                    f'<span class="player-name">{player["name"]}</span>'
-                    f'<span class="player-job">{player["job"]}</span>'
-                    f'</div>'
-                    f'<div class="player-stats">'
-                    f'<div>'
-                    f'<span class="stat-label">전투력</span>'
-                    f'<span class="combat-power">{player["combat_power"]:.2f}</span>'
-                    f'</div>'
-                    f'<div>'
-                    f'<span class="stat-label">마도저항</span>'
-                    f'<span class="magic-resistance">{player["magic_resistance"]:,}</span>'
-                    f'</div>'
-                    f'</div>'
-                    f'<div class="player-tags">{tags}</div>'
-                    f'</div>'
+                name = st.text_input(
+                    "닉네임",
+                    value=editing_player["name"] if editing_player else ""
                 )
 
-                st.markdown(player_card, unsafe_allow_html=True)
+                st.caption("※ 정확한 통계를 위해 닉네임 변형 없이 그대로 기입해주세요. ( ~문어~ > 문어야끼 )")
+                st.caption("※ 리지님은 본캐/부캐 상관없이 꼭 '리지'로 기입해주세요.")
 
-            with col2:
-                if st.button("수정", key=f"edit_{index}"):
-                    st.session_state.editing_index = index
-                    st.rerun()
+                combat_power = st.number_input(
+                    "전투력",
+                    min_value=0.0,
+                    step=0.01,
+                    format="%.2f",
+                    value=editing_player["combat_power"] if editing_player else 0.0
+                )
 
-                if st.button("삭제", key=f"delete_{index}"):
-                    st.session_state.players.pop(index)
-                    st.rerun()   
+                job_list = [
+                    "사제", "전사", "마법사", "수도사",
+                    "장궁병", "듀얼블레이드", "대검전사", "검술사",
+                    "기사", "궁수", "석궁사수", "빙결술사",
+                    "화염술사", "전격술사", "힐러", "암흑술사",
+                    "도적", "격투가", "음유시인", "악사", "댄서"
+                ]
+
+                job_index = 0
+
+                if editing_player:
+                    job_index = job_list.index(editing_player["job"])
+
+                job = st.selectbox(
+                    "직업",
+                    job_list,
+                    index=job_index
+                )
+
+                magic_resistance = st.number_input(
+                    "마도저항",
+                    min_value=0,
+                    step=1,
+                    value=editing_player["magic_resistance"] if editing_player else 0
+                )
+
+                is_sub = st.checkbox(
+                    "부캐",
+                    value=editing_player["is_sub"] if editing_player else False
+                )
+
+                is_newbie = st.checkbox(
+                    "뉴비",
+                    value=editing_player["is_newbie"] if editing_player else False
+                )
+
+                is_mobile = st.checkbox(
+                    "모바일",
+                    value=editing_player["is_mobile"] if editing_player else False
+                )
+
+                button_text = (
+                    "수정 저장"
+                    if st.session_state.editing_index is not None
+                    else "참가자 추가"
+                )
+
+                if st.button(button_text):
+
+                    cleaned_name = name.strip()
+
+                    # 닉네임을 입력하지 않은 경우
+                    if cleaned_name == "":
+                        st.warning("닉네임을 입력해주세요.")
+
+                    # 다른 참가자와 닉네임이 중복되는 경우
+                    elif any(
+                        player["name"] == cleaned_name
+                        and index != st.session_state.editing_index
+                        for index, player in enumerate(st.session_state.players)
+                    ):
+                        st.warning("이미 등록된 참가자입니다.")
+
+                    else:
+                        player_data = {
+                            "name": cleaned_name,
+                            "combat_power": combat_power,
+                            "job": job,
+                            "magic_resistance": magic_resistance,
+                            "is_sub": is_sub,
+                            "is_newbie": is_newbie,
+                            "is_mobile": is_mobile
+                        }
+
+                        # 새 참가자 추가
+                        if st.session_state.editing_index is None:
+                            st.session_state.players.append(player_data)
+                            st.success(f"{cleaned_name} 참가자가 추가되었습니다.")
+
+                        # 기존 참가자 수정
+                        else:
+                            st.session_state.players[
+                                st.session_state.editing_index
+                            ] = player_data
+
+                            st.session_state.editing_index = None
+
+                            st.success(f"{cleaned_name} 참가자 정보가 수정되었습니다.")
+                            st.rerun()
+
+                if st.session_state.editing_index is not None:
+                    if st.button("수정 취소"):
+                        st.session_state.editing_index = None
+                        st.rerun()
+
+            with list_col:
+                st.subheader("참가자 목록")
+
+                if st.session_state.editing_index is not None:
+                    editing_player = st.session_state.players[
+                        st.session_state.editing_index
+                    ]
+                else:
+                    editing_player = None
+
+                for index, player in enumerate(st.session_state.players):
+                    col1, col2 = st.columns([5, 1])
+
+                    with col1:
+                        tags = ""
+
+                        if player["is_sub"]:
+                            tags += '<span class="player-tag sub-tag">부캐</span>'
+
+                        if player["is_newbie"]:
+                            tags += '<span class="player-tag newbie-tag">뉴비</span>'
+
+                        if player["is_mobile"]:
+                            tags += '<span class="player-tag mobile-tag">모바일</span>'
+
+                        player_card = (
+                            f'<div class="player-card">'
+                            f'<div class="player-card-top">'
+                            f'<span class="player-name">{player["name"]}</span>'
+                            f'<span class="player-job">{player["job"]}</span>'
+                            f'</div>'
+                            f'<div class="player-stats">'
+                            f'<div>'
+                            f'<span class="stat-label">전투력</span>'
+                            f'<span class="combat-power">{player["combat_power"]:.2f}</span>'
+                            f'</div>'
+                            f'<div>'
+                            f'<span class="stat-label">마도저항</span>'
+                            f'<span class="magic-resistance">{player["magic_resistance"]:,}</span>'
+                            f'</div>'
+                            f'</div>'
+                            f'<div class="player-tags">{tags}</div>'
+                            f'</div>'
+                        )
+
+                        st.markdown(player_card, unsafe_allow_html=True)
+
+                    with col2:
+                        if st.button("수정", key=f"edit_{index}"):
+                            st.session_state.editing_index = index
+                            st.rerun()
+
+                        if st.button("삭제", key=f"delete_{index}"):
+                            st.session_state.players.pop(index)
+                            st.rerun()   
 
         st.divider()
 
@@ -802,33 +805,6 @@ with tab_team:
                         st.session_state.current_step = 3
                         st.rerun()
 
-
-                # =========================
-                # 채팅용 팀 구성
-                # =========================
-
-                team_a_names = " / ".join(
-                    player["name"] for player in result["team_a"]
-                )
-
-                team_b_names = " / ".join(
-                    player["name"] for player in result["team_b"]
-                )
-
-                copy_text = (
-                    f"A팀 - {team_a_names}\n"
-                    f"B팀 - {team_b_names}"
-                )
-
-                st.text_area(
-                    "채팅용 팀 구성",
-                    copy_text,
-                    height=80,
-                    key=f"chat_copy_{index}"
-                )
-
-                st.divider()
-
     if st.session_state.current_step == 3:
 
         if st.button("← 이전", key="back_to_recommendations"):
@@ -1001,18 +977,54 @@ with tab_team:
         if st.session_state.get("team_confirmed", False):
             st.success("최종 편성이 확정되었습니다! 레이드 결과를 입력해주세요.")
 
+                # 채팅 복사용 최종 팀 구성
+            team_a_names = " / ".join(
+                player["name"]
+                for player in st.session_state.confirmed_team_a
+            )
+
+            team_b_names = " / ".join(
+                player["name"]
+                for player in st.session_state.confirmed_team_b
+            )
+
+            copy_text = (
+                f"A팀 - {team_a_names}\n"
+                f"B팀 - {team_b_names}"
+            )
+
+            st.text_area(
+                "📋 채팅용 팀 구성 (닉네임이 너무 긴 경우 편집해서 복사해주세요!)",
+                copy_text,
+                height=90,
+                key="confirmed_chat_copy"
+            )
+
+
             st.markdown("### 🏁 레이드 결과 입력")
+            def parse_clear_time(time_text):
+                try:
+                    minutes, seconds = time_text.split(":")
+                    minutes = int(minutes)
+                    seconds = int(seconds)
+
+                    if minutes < 0 or seconds < 0 or seconds >= 60:
+                        return None
+
+                    return minutes * 60 + seconds
+
+                except ValueError:
+                    return None
 
             result_a_col, result_b_col = st.columns(2)
 
             with result_a_col:
                 st.markdown("#### A팀")
 
-                a_clear_time = st.number_input(
-                    "A팀 클리어 시간(초)",
-                    min_value=0,
-                    step=1,
-                    key="a_clear_time"
+                a_clear_time_text = st.text_input(
+                    "A팀 클리어 시간",
+                    placeholder="예: 1:23",
+                    key="a_clear_time_text"
                 )
 
                 a_team_names = [
@@ -1041,11 +1053,10 @@ with tab_team:
             with result_b_col:
                 st.markdown("#### B팀")
 
-                b_clear_time = st.number_input(
-                    "B팀 클리어 시간(초)",
-                    min_value=0,
-                    step=1,
-                    key="b_clear_time"
+                b_clear_time_text = st.text_input(
+                    "B팀 클리어 시간",
+                    placeholder="예: 1:23",
+                    key="b_clear_time_text"
                 )
 
                 b_team_names = [
@@ -1071,6 +1082,9 @@ with tab_team:
                     key="b_rank_3"
                 )
 
+            a_clear_time = parse_clear_time(a_clear_time_text)
+            b_clear_time = parse_clear_time(b_clear_time_text)
+
             can_save_result = True
 
             a_ranks = [a_rank_1, a_rank_2, a_rank_3]
@@ -1086,7 +1100,10 @@ with tab_team:
                 st.warning("B팀 1·2·3등에 같은 사람이 중복 선택되었습니다.")
 
 
-            if a_clear_time <= 0 or b_clear_time <= 0:
+            if a_clear_time is None or b_clear_time is None:
+                st.warning("클리어 시간은 1:23처럼 분:초 형식으로 입력해주세요.")
+                can_save_result = False
+            elif a_clear_time <= 0 or b_clear_time <= 0:
                 st.warning("A팀과 B팀의 클리어 시간을 입력해주세요.")
                 can_save_result = False
 
@@ -1384,9 +1401,30 @@ with tab_stats:
     if previous_raid is None:
         st.info("저장된 레이드 기록이 없습니다.")
     else:
+        a_time = previous_raid["a_clear_time"]
+        b_time = previous_raid["b_clear_time"]
+
+        # 초 → 분:초
+        a_time_text = f"{a_time // 60}:{a_time % 60:02d}"
+        b_time_text = f"{b_time // 60}:{b_time % 60:02d}"
+
+        # 두 팀 시간 차이
+        time_gap = abs(a_time - b_time)
+        time_gap_text = f"{time_gap // 60}:{time_gap % 60:02d}"
+
+        # 우승팀
+        if a_time < b_time:
+            winner = "A팀"
+        elif b_time < a_time:
+            winner = "B팀"
+        else:
+            winner = "무승부"
+
         st.write(f"날짜: {previous_raid['raid_date']}")
-        st.write(f"A팀 클리어 시간: {previous_raid['a_clear_time']}초")
-        st.write(f"B팀 클리어 시간: {previous_raid['b_clear_time']}초")
+        st.write(f"🏆 우승팀: **{winner}**")
+        st.write(f"A팀 클리어 시간: {a_time_text}")
+        st.write(f"B팀 클리어 시간: {b_time_text}")
+        st.write(f"⏱️ 클리어 시간 차이: {time_gap_text}")
 
         previous_players = [
             record
