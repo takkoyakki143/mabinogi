@@ -144,7 +144,7 @@ def get_team_job_bonus(team):
 def get_team_special_bonus(team):
     total_bonus = 0
 
-    names = [player["name"] for player in team]
+    names = [player["name"].strip() for player in team]
 
     # 아키/레키 보너스는 같은 팀일 경우 중복 적용하지 않음
     if "아키이즈" in names:
@@ -158,7 +158,7 @@ def get_team_special_bonus(team):
 
     # 그 외 특수 캐릭터 보너스
     for player in team:
-        name = player["name"]
+        name = player["name"].strip()
 
         if name in ["아키이즈", "레키나", "엘라웨스"]:
             continue
