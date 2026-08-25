@@ -19,6 +19,7 @@ SPECIAL_PLAYER_BONUS = {
     "아키이즈": 0.7,
     "레키나": 0.15,
     "리지": -0.7,
+    "엘라웨스": 0.2
 }
 
 HEALER_JOBS = [
@@ -153,11 +154,15 @@ def get_team_special_bonus(team):
     elif "레키나" in names:
         total_bonus += SPECIAL_PLAYER_BONUS["레키나"]
 
+    # 엘라웨스는 팀 구성과 관계없이 항상 적용
+    if "엘라웨스" in names:
+        total_bonus += SPECIAL_PLAYER_BONUS["엘라웨스"]
+
     # 그 외 특수 캐릭터 보너스
     for player in team:
         name = player["name"].strip()
 
-        if name in ["아키이즈", "레키나"]:
+        if name in ["아키이즈", "레키나", "엘라웨스"]:
             continue
 
         if name in SPECIAL_PLAYER_BONUS:
