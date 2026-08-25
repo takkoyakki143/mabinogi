@@ -19,7 +19,6 @@ SPECIAL_PLAYER_BONUS = {
     "아키이즈": 0.7,
     "레키나": 0.15,
     "리지": -0.7,
-    "엘라웨스": 0.3,
 }
 
 HEALER_JOBS = [
@@ -81,9 +80,11 @@ def get_mr_bonus(magic_resistance):
     elif magic_resistance >= 3200:
         return -0.30
     elif magic_resistance >= 3100:
-        return -0.40
+        return -0.35
+    elif magic_resistance >= 3000:
+        return -0.4
     else:
-        return -0.90
+        return 0
 
 
 def get_adjusted_combat_power(combat_power, magic_resistance):
@@ -152,15 +153,11 @@ def get_team_special_bonus(team):
     elif "레키나" in names:
         total_bonus += SPECIAL_PLAYER_BONUS["레키나"]
 
-    # 엘라웨스는 팀 구성과 관계없이 항상 적용
-    if "엘라웨스" in names:
-        total_bonus += SPECIAL_PLAYER_BONUS["엘라웨스"]
-
     # 그 외 특수 캐릭터 보너스
     for player in team:
         name = player["name"].strip()
 
-        if name in ["아키이즈", "레키나", "엘라웨스"]:
+        if name in ["아키이즈", "레키나"]:
             continue
 
         if name in SPECIAL_PLAYER_BONUS:
