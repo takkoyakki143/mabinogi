@@ -19,7 +19,9 @@ SPECIAL_PLAYER_BONUS = {
     "아키이즈": 0.7,
     "레키나": 0.15,
     "리지": -0.7,
-    "엘라웨스": 0.2
+    "엘라웨스": 0.3,
+    "러브홀리": 0.35,
+    "윤유선": 0.4
 }
 
 HEALER_JOBS = [
@@ -77,19 +79,20 @@ def get_mr_bonus(magic_resistance):
     elif magic_resistance >= 3500:
         return -0.14
     elif magic_resistance >= 3300:
-        return -0.25
+        return -0.20
     elif magic_resistance >= 3200:
-        return -0.30
-    elif magic_resistance >= 3100:
-        return -0.35
+        return -0.25
     elif magic_resistance >= 3000:
-        return -0.4
+        return -0.35
     else:
-        return 0
+        return None
 
 
 def get_adjusted_combat_power(combat_power, magic_resistance):
     mr_bonus = get_mr_bonus(magic_resistance)
+
+    if mr_bonus is None:
+        return None
 
     adjusted_combat_power = combat_power * (1 + mr_bonus)
 
@@ -104,9 +107,13 @@ def get_team_average(team):
     adjusted_powers = []
 
     for player in team:
-        adjusted_powers.append(
-            player["adjusted_combat_power"]
-        )
+        adjusted_power = player["adjusted_combat_power"]
+
+        if adjusted_power is not None:
+            adjusted_powers.append(adjusted_power)
+
+    if len(adjusted_powers) == 0:
+        return 0
 
     average_power = sum(adjusted_powers) / len(adjusted_powers)
 
@@ -117,28 +124,45 @@ def get_team_job_bonus(team):
     jobs = []
 
     for player in team:
+        if player["magic_resistance"] < 2800:
+            continue
+
         jobs.append(player["job"])
 
     total_bonus = 0
 
     for job in TEAM_JOB_BONUS:
-        if job in ["빙결술사", "사제", "수도사", "힐러"]:
+        if job in ["빙결술사", "기사", "전사", "사제", "수도사", "힐러"]:
             continue
 
         if job in jobs:
             total_bonus += TEAM_JOB_BONUS[job]
 
-    support_jobs = ["사제", "수도사", "힐러"]
+    if "힐러" in jobs:
+        total_bonus += 0.7
+    elif "사제" in jobs:
+        total_bonus += 0.5
+    elif "수도사" in jobs:
+        total_bonus += 0.5
 
-    if any(job in jobs for job in support_jobs):
-        total_bonus += 0.2
-
+    # 탱커 계열 보너스
     ice_count = jobs.count("빙결술사")
+    has_knight = "기사" in jobs
+    has_warrior = "전사" in jobs
 
+    # 예외: 빙결 2명 또는 빙결 + 기사
     if ice_count >= 2:
-        total_bonus += 0.4
-    elif ice_count == 1:
-        total_bonus += 0.2
+        total_bonus += 1.6
+    elif ice_count >= 1 and has_knight:
+        total_bonus += 1.6
+
+    # 기본: 빙결 > 기사 > 전사 순으로 팀당 1회 적용
+    elif ice_count >= 1:
+        total_bonus += 1.4
+    elif has_knight:
+        total_bonus += 1.4
+    elif has_warrior:
+        total_bonus += 1.0
 
     return round_2(total_bonus)
 
@@ -170,6 +194,12 @@ def get_team_special_bonus(team):
     
     return round_2(total_bonus)
 
+def get_team_content_bonus(team):
+    for player in team:
+        if player.get("is_special_content", False):
+            return 0.8
+
+    return 0
 
 def get_team_player_penalty(team):
     total_penalty = 0
@@ -182,7 +212,7 @@ def get_team_player_penalty(team):
             total_penalty -= 0.7
 
         if player["is_mobile"]:
-            total_penalty -= 0.1
+            total_penalty -= 0.5
 
     return round_2(total_penalty)
 
@@ -191,12 +221,14 @@ def get_team_score(team):
     average_power = get_team_average(team)
     job_bonus = get_team_job_bonus(team)
     special_bonus = get_team_special_bonus(team)
+    content_bonus = get_team_content_bonus(team)
     player_penalty = get_team_player_penalty(team)
 
     team_score = (
         average_power
         + job_bonus
         + special_bonus
+        + content_bonus
         + player_penalty
     )
 

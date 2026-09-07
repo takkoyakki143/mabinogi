@@ -12,6 +12,7 @@ from balancer import (
     get_team_job_bonus,
     get_team_special_bonus,
     get_team_player_penalty,
+    get_team_content_bonus,
 )
 
 # =========================
@@ -472,6 +473,11 @@ with tab_team:
                     value=editing_player["is_mobile"] if editing_player else False
                 )
 
+                is_special_content = st.checkbox(
+                    "긍지/유폐된 어둠",
+                    value=editing_player.get("is_special_content", False) if editing_player else False
+                )
+
                 button_text = (
                     "수정 저장"
                     if st.session_state.editing_index is not None
@@ -502,7 +508,8 @@ with tab_team:
                             "magic_resistance": magic_resistance,
                             "is_sub": is_sub,
                             "is_newbie": is_newbie,
-                            "is_mobile": is_mobile
+                            "is_mobile": is_mobile,
+                            "is_special_content": is_special_content
                         }
 
                         # 새 참가자 추가
@@ -550,6 +557,9 @@ with tab_team:
 
                         if player["is_mobile"]:
                             tags += '<span class="player-tag mobile-tag">모바일</span>'
+
+                        if player.get("is_special_content", False):
+                            tags += '<span class="player-tag special-content-tag">긍지/유폐</span>'
 
                         player_card = (
                             f'<div class="player-card">'
@@ -738,6 +748,8 @@ with tab_team:
                             f'<strong>{get_team_job_bonus(result["team_a"]):+.2f}</strong></div>'
                             f'<div class="team-stat"><span>특수 캐릭터 보너스</span>'
                             f'<strong>{get_team_special_bonus(result["team_a"]):+.2f}</strong></div>'
+                            f'<div class="team-stat"><span>긍지/유폐 보너스</span>'
+                            f'<strong>{get_team_content_bonus(result["team_a"]):+.2f}</strong></div>'
                             f'<div class="team-stat"><span>부캐/뉴비/모바일 보정</span>'
                             f'<strong>{get_team_player_penalty(result["team_a"]):+.2f}</strong></div>'
                             f'<div class="team-card-divider"></div>'
@@ -772,6 +784,8 @@ with tab_team:
                             f'<strong>{get_team_job_bonus(result["team_b"]):+.2f}</strong></div>'
                             f'<div class="team-stat"><span>특수 캐릭터 보너스</span>'
                             f'<strong>{get_team_special_bonus(result["team_b"]):+.2f}</strong></div>'
+                            f'<div class="team-stat"><span>긍지/유폐 보너스</span>'
+                            f'<strong>{get_team_content_bonus(result["team_b"]):+.2f}</strong></div>'
                             f'<div class="team-stat"><span>부캐/뉴비/모바일 보정</span>'
                             f'<strong>{get_team_player_penalty(result["team_b"]):+.2f}</strong></div>'
                             f'<div class="team-card-divider"></div>'
