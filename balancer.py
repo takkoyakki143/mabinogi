@@ -7,21 +7,25 @@ from decimal import Decimal, ROUND_HALF_UP
 # =========================
 
 TEAM_JOB_BONUS = {
-    "사제": 0.3,
+    "사제": 0.2,
     "전사": 0.2,
     "수도사": 0.2,
     "기사": 0.2,
     "빙결술사": 0.2,
-    "힐러": 0.4
+    "힐러": 0.2,
+    "음유시인": 0.2
 }
 
 SPECIAL_PLAYER_BONUS = {
-    "아키이즈": 0.7,
+    "아키이즈": 0.6,
     "레키나": 0.15,
     "리지": -0.7,
-    "엘라웨스": 0.3,
-    "러브홀리": 0.35,
-    "윤유선": 0.4
+    "엘라웨스": 0.35,
+    "러브홀리": 0.3,
+    "윤유선": 0.4,
+    "유명한투리구슬": 0.3,
+    "장난감활": 0.2,
+    "방구몬": 0.1
 }
 
 HEALER_JOBS = [
@@ -162,7 +166,7 @@ def get_team_job_bonus(team):
     elif has_knight:
         total_bonus += 1.4
     elif has_warrior:
-        total_bonus += 1.0
+        total_bonus += 1.3
 
     return round_2(total_bonus)
 
@@ -178,15 +182,11 @@ def get_team_special_bonus(team):
     elif "레키나" in names:
         total_bonus += SPECIAL_PLAYER_BONUS["레키나"]
 
-    # 엘라웨스는 팀 구성과 관계없이 항상 적용
-    if "엘라웨스" in names:
-        total_bonus += SPECIAL_PLAYER_BONUS["엘라웨스"]
-
     # 그 외 특수 캐릭터 보너스
     for player in team:
         name = player["name"].strip()
 
-        if name in ["아키이즈", "레키나", "엘라웨스"]:
+        if name in ["아키이즈", "레키나"]:
             continue
 
         if name in SPECIAL_PLAYER_BONUS:
