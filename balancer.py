@@ -142,12 +142,9 @@ def get_team_job_bonus(team):
         if job in jobs:
             total_bonus += TEAM_JOB_BONUS[job]
 
-    if "힐러" in jobs:
-        total_bonus += 0.7
-    elif "사제" in jobs:
-        total_bonus += 0.5
-    elif "수도사" in jobs:
-        total_bonus += 0.5
+    # 힐러 계열은 인원수와 관계없이 팀당 +0.2 한 번
+    if any(job in jobs for job in ["힐러", "사제", "수도사"]):
+        total_bonus += 0.2
 
     # 탱커 계열 보너스
     ice_count = jobs.count("빙결술사")
@@ -197,7 +194,7 @@ def get_team_special_bonus(team):
 def get_team_content_bonus(team):
     for player in team:
         if player.get("is_special_content", False):
-            return 0.8
+            return 0.3
 
     return 0
 
